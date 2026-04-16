@@ -1,0 +1,71 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "Charity project information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string", "enum": ["مياه وآبار", "مساجد", "زكاة مال", "زكاة فطر", "فدية صيام", "دعم التعليم", "الصحة"] },
+        "targetAmount": { "type": "number" },
+        "currentAmount": { "type": "number" },
+        "imageUrl": { "type": "string" },
+        "creatorId": { "type": "string" },
+        "creatorName": { "type": "string" },
+        "isPublic": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["pending", "active", "completed", "rejected"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "endDate": { "type": "string", "format": "date-time" },
+        "donorCount": { "type": "number" }
+      },
+      "required": ["title", "category", "targetAmount", "creatorId", "isPublic", "status"]
+    },
+    "Donation": {
+      "title": "Donation",
+      "description": "Donation record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "projectId": { "type": "string" },
+        "projectTitle": { "type": "string" },
+        "amount": { "type": "number" },
+        "donorId": { "type": "string" },
+        "donorName": { "type": "string" },
+        "isAnonymous": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["success", "pending", "failed"] }
+      },
+      "required": ["projectId", "amount", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/projects/{projectId}": {
+      "schema": "Project",
+      "description": "Charity projects"
+    },
+    "/donations/{donationId}": {
+      "schema": "Donation",
+      "description": "Donation records"
+    }
+  }
+}

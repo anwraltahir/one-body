@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+@theme {
+  --color-sudan-red: #C8102E;
+  --color-sudan-green: #007A3D;
+  --color-sudan-green-dark: #005a2d;
+  --color-sudan-gold: #C9A227;
+  --color-gray-light: #F8F9FA;
+  --color-gray-medium: #E9ECEF;
+  --color-black-rich: #1A1A1A;
+  
+  --font-sans: 'Cairo', sans-serif;
+}
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 0 0% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 150 100% 24%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 350 85% 42%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 16% 93%;
+    --muted-foreground: 210 10% 40%;
+    --accent: 45 67% 47%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 210 16% 93%;
+    --input: 210 16% 93%;
+    --ring: 150 100% 24%;
+    --radius: 8px;
+  }
+}
+
+body {
+  @apply bg-gray-light text-black-rich antialiased;
+  font-family: 'Cairo', sans-serif;
+  direction: rtl;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @apply font-bold;
+}
+
+/* Spacing System Helpers */
+.section-gap { @apply gap-10; }
+.element-gap { @apply gap-2; }
+.card-padding { @apply p-6; }
+
+.btn-primary {
+  @apply bg-sudan-green text-white px-6 py-2.5 rounded-lg font-semibold transition-all hover:bg-sudan-green-dark active:scale-95;
+}
+
+.btn-outline {
+  @apply border-2 border-sudan-green text-sudan-green px-6 py-2.5 rounded-lg font-semibold transition-all hover:bg-sudan-green/5 active:scale-95;
+}
+
+.header-shadow {
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+}
+
+.card-shadow {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-gray-light;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-medium rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-300;
+}

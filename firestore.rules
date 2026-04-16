@@ -1,0 +1,130 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Fields:
+    //   - uid: string (required)
+    //   - displayName: string
+    //   - email: string (required, email format)
+    //   - photoURL: string
+    //   - role: string (user, admin)
+    //   - createdAt: timestamp
+    //
+    // Collection: projects
+    // Fields:
+    //   - title: string (required, max 100)
+    //   - description: string (required, max 2000)
+    //   - category: string (required, enum)
+    //   - targetAmount: number (required, positive)
+    //   - currentAmount: number (positive)
+    //   - imageUrl: string
+    //   - creatorId: string (required)
+    //   - creatorName: string
+    //   - isPublic: bool (required)
+    //   - status: string (pending, active, completed, rejected)
+    //   - createdAt: timestamp
+    //   - endDate: timestamp
+    //   - donorCount: number
+    //
+    // Collection: donations
+    // Fields:
+    //   - projectId: string (required)
+    //   - amount: number (required, positive)
+    //   - donorId: string
+    //   - donorName: string
+    //   - isAnonymous: bool
+    //   - createdAt: timestamp
+    //   - status: string (success, pending, failed)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "anwraltahir@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isPositive(val) {
+      return val is number && val > 0;
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+    
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'role']) &&
+             data.uid == request.auth.uid &&
+             isValidEmail(data.email) &&
+             data.role in ['user', 'admin'] &&
+             data.displayName is string && data.displayName.size() < 100;
+    }
+
+    function isValidProject(data) {
+      return data.keys().hasAll(['title', 'category', 'targetAmount', 'creatorId', 'isPublic', 'status']) &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 100 &&
+             data.description is string && data.description.size() <= 2000 &&
+             data.category in ['مياه وآبار', 'مساجد', 'زكاة مال', 'زكاة فطر', 'فدية صيام', 'دعم التعليم', 'الصحة'] &&
+             isPositive(data.targetAmount) &&
+             data.creatorId == request.auth.uid &&
+             data.status in ['pending', 'active', 'completed', 'rejected'];
+    }
+
+    function isValidDonation(data) {
+      return data.keys().hasAll(['projectId', 'amount', 'status']) &&
+             isPositive(data.amount) &&
+             data.status in ['success', 'pending', 'failed'];
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == 'user' || isAdmin());
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
+    }
+
+    match /projects/{projectId} {
+      allow read: if resource.data.isPublic == true || isOwner(resource.data.creatorId) || isAdmin();
+      allow create: if isAuthenticated() && isValidProject(request.resource.data) && (request.resource.data.status == 'pending' || isAdmin());
+      allow update: if isAuthenticated() && (
+        (isOwner(resource.data.creatorId) && isValidProject(request.resource.data) && request.resource.data.status == resource.data.status) ||
+        isAdmin() ||
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentAmount', 'donorCount'])) // For donations
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /donations/{donationId} {
+      allow read: if isAuthenticated() && (isOwner(resource.data.donorId) || isAdmin());
+      allow create: if isValidDonation(request.resource.data) && (
+        !('donorId' in request.resource.data) || isOwner(request.resource.data.donorId)
+      );
+    }
+    
+    match /test/connection {
+      allow read: if true;
+    }
+  }
+}
