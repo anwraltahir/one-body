@@ -12,6 +12,7 @@ import Projects from './pages/Projects';
 import CreateProject from './pages/CreateProject';
 import ProjectDetails from './pages/ProjectDetails';
 import Dashboard from './pages/Dashboard';
+import About from './pages/About';
 import Chatbot from './components/Chatbot';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -29,6 +30,7 @@ export default function App() {
               <Route path="/projects/:id" element={<ProjectDetails />} />
               <Route path="/create-project" element={<CreateProject />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/about" element={<About />} />
               {/* Add more routes as needed */}
             </Routes>
           </main>
