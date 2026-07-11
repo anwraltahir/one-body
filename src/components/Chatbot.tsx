@@ -1,125 +1,28 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { MessageCircle, X, Send, Bot, User } from 'lucide-react';
-import { getChatResponse } from '../services/geminiService';
+import React from 'react';
+import { motion } from 'motion/react';
 
 const Chatbot: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<{ role: 'user' | 'model', text: string }[]>([
-    { role: 'model', text: 'مرحباً بك في منصة الجسد الواحد. أنا مساعدك الذكي، كيف يمكنني مساعدتك في عمل الخير اليوم؟' }
-  ]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const handleSend = async () => {
-    if (!input.trim() || loading) return;
-
-    const userMessage = input.trim();
-    setInput('');
-    setMessages(prev => [...prev, { role: 'user', text: userMessage }]);
-    setLoading(true);
-
-    const history = messages.map(m => ({
-      role: m.role,
-      parts: [{ text: m.text }]
-    }));
-
-    const response = await getChatResponse(userMessage, history);
-    setMessages(prev => [...prev, { role: 'model', text: response || '' }]);
-    setLoading(false);
-  };
+  const whatsappNumber = '249920380318';
+  const whatsappUrl = `https://wa.me/${whatsappNumber}`;
 
   return (
     <div className="fixed bottom-6 left-6 z-[100]">
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="bg-white w-[350px] h-[500px] rounded-3xl shadow-2xl border border-slate-100 flex flex-col overflow-hidden mb-4"
-          >
-            {/* Header */}
-            <div className="bg-sudan-green p-4 text-white flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                  <Bot size={20} />
-                </div>
-                <div>
-                  <div className="font-bold text-sm">مساعد الجسد الواحد</div>
-                  <div className="text-[10px] opacity-80">متصل الآن</div>
-                </div>
-              </div>
-              <button onClick={() => setIsOpen(false)} className="hover:bg-white/10 p-1 rounded-full">
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Messages */}
-            <div className="flex-grow overflow-y-auto p-4 space-y-4 no-scrollbar">
-              {messages.map((m, i) => (
-                <div key={i} className={`flex ${m.role === 'user' ? 'justify-start' : 'justify-end'}`}>
-                  <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${
-                    m.role === 'user' 
-                      ? 'bg-slate-100 text-slate-800 rounded-tr-none' 
-                      : 'bg-sudan-green/10 text-sudan-green rounded-tl-none font-medium'
-                  }`}>
-                    {m.text}
-                  </div>
-                </div>
-              ))}
-              {loading && (
-                <div className="flex justify-end">
-                  <div className="bg-slate-50 p-3 rounded-2xl rounded-tl-none flex gap-1">
-                    <div className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce"></div>
-                    <div className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                    <div className="w-1.5 h-1.5 bg-slate-300 rounded-full animate-bounce [animation-delay:0.4s]"></div>
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input */}
-            <div className="p-4 border-t border-slate-100">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="اكتب رسالتك..."
-                  className="w-full pr-4 pl-12 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-sudan-green"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                />
-                <button
-                  onClick={handleSend}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-sudan-green text-white rounded-lg flex items-center justify-center hover:bg-opacity-90 transition-all"
-                >
-                  <Send size={16} />
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <motion.button
+      <motion.a
+        href={whatsappUrl}
+        target="_blank"
+        rel="noopener noreferrer"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 bg-sudan-green text-white rounded-full shadow-xl flex items-center justify-center hover:bg-opacity-90 transition-all"
+        className="w-14 h-14 bg-[#25D366] text-white rounded-full shadow-xl flex items-center justify-center hover:bg-opacity-95 transition-all"
+        title="تواصل معنا عبر واتساب"
       >
-        {isOpen ? <X size={24} /> : <MessageCircle size={28} />}
-      </motion.button>
+        <svg 
+          viewBox="0 0 24 24" 
+          className="w-8 h-8 fill-current"
+        >
+          <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.97C16.579 1.963 14.1 1.94 11.993 1.94c-5.439 0-9.865 4.37-9.869 9.8-.001 1.76.471 3.478 1.365 4.972l-.993 3.626 3.725-.976-.174-.112zM17.307 14.2c-.29-.145-1.713-.846-1.977-.942-.265-.096-.458-.145-.65.145-.192.29-.747.942-.916 1.133-.169.192-.338.217-.628.072-2.842-1.422-4.048-2.613-5.265-4.707-.29-.497.29-.462.83-1.54.097-.193.048-.362-.024-.507-.072-.145-.65-1.568-.89-2.146-.233-.56-.47-.482-.65-.491-.168-.008-.362-.01-.555-.01s-.507.072-.771.362c-.265.29-1.013.99-1.013 2.413 0 1.422 1.037 2.8 1.181 2.993.145.193 2.036 3.11 4.935 4.364.69.299 1.228.477 1.648.61.693.22 1.324.19 1.823.11.556-.09 1.713-.7 1.953-1.378.24-.679.24-1.26.169-1.378-.073-.118-.266-.192-.556-.337z"/>
+        </svg>
+      </motion.a>
     </div>
   );
 };
