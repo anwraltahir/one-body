@@ -58,12 +58,15 @@ const ProjectDetails: React.FC = () => {
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-10">
           <div className="rounded-3xl overflow-hidden shadow-sm border border-slate-100 bg-white">
-            <img
-              src={project.imageUrl || `https://picsum.photos/seed/${project.id}/1200/600`}
-              className="w-full h-[400px] object-cover"
-              alt={project.title}
-              referrerPolicy="no-referrer"
-            />
+            <div className="w-full h-[300px] bg-slate-50 flex items-center justify-center border-b border-slate-100">
+              <div className="text-7xl">
+                {project.category === 'مياه وآبار' && '💧'}
+                {project.category === 'مساجد' && '🕌'}
+                {project.category === 'دعم التعليم' && '🎓'}
+                {project.category === 'الصحة' && '⚕️'}
+                {['زكاة مال', 'زكاة فطر', 'فدية صيام'].includes(project.category) && '🌾'}
+              </div>
+            </div>
             <div className="p-8">
               <div className="flex items-center gap-3 mb-4">
                 <span className="bg-sudan-green/10 text-sudan-green px-4 py-1 rounded-full text-sm font-bold">
@@ -95,7 +98,7 @@ const ProjectDetails: React.FC = () => {
                         <Heart size={20} fill={donation.isAnonymous ? 'none' : 'currentColor'} />
                       </div>
                       <div>
-                        <div className="font-bold text-slate-900">{donation.donorName}</div>
+                        <div className="font-bold text-slate-900">فاعل خير</div>
                         <div className="text-xs text-slate-500">{donation.createdAt?.toDate().toLocaleDateString('ar-EG')}</div>
                       </div>
                     </div>

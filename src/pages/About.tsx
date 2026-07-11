@@ -89,14 +89,14 @@ const About: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="relative rounded-3xl overflow-hidden h-[400px] card-shadow">
-          <img 
-            src="https://picsum.photos/seed/sudan-solidarity/800/600" 
-            alt="Solidarity" 
-            className="w-full h-full object-cover"
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 bg-sudan-green/20 mix-blend-multiply"></div>
+        <div className="relative rounded-3xl overflow-hidden h-[400px] card-shadow bg-gradient-to-tr from-sudan-green/20 to-sudan-gold/20 flex items-center justify-center p-8 border border-slate-100">
+          <div className="text-center space-y-4">
+            <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto text-sudan-green shadow-md">
+              <Heart size={40} fill="currentColor" />
+            </div>
+            <div className="text-xl font-bold text-slate-800">منصة الجسد الواحد</div>
+            <div className="text-sm text-slate-500 max-w-xs leading-relaxed font-semibold">معاً لبناء مجتمع سوداني متكافل تسوده قيم المحبة والعطاء</div>
+          </div>
         </div>
       </section>
 

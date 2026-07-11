@@ -16,13 +16,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
       whileHover={{ y: -5 }}
       className="bg-white rounded-2xl overflow-hidden card-shadow border border-slate-100 flex flex-col h-full"
     >
-      <div className="relative h-48 overflow-hidden">
-        <img
-          src={project.imageUrl || `https://picsum.photos/seed/${project.id}/800/600`}
-          alt={project.title}
-          className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-          referrerPolicy="no-referrer"
-        />
+      <div className="relative h-48 bg-slate-50 flex items-center justify-center border-b border-slate-100">
+        <div className="text-5xl">
+          {project.category === 'مياه وآبار' && '💧'}
+          {project.category === 'مساجد' && '🕌'}
+          {project.category === 'دعم التعليم' && '🎓'}
+          {project.category === 'الصحة' && '⚕️'}
+          {['زكاة مال', 'زكاة فطر', 'فدية صيام'].includes(project.category) && '🌾'}
+        </div>
         <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-sudan-green">
           {project.category}
         </div>

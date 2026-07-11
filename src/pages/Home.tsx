@@ -49,14 +49,16 @@ const Home: React.FC = () => {
       <section className="relative h-[400px] rounded-3xl overflow-hidden bg-slate-900 flex items-center px-10">
         <motion.div 
           style={{ y: y1 }}
-          className="absolute inset-0 opacity-30 pointer-events-none"
+          className="absolute inset-0 opacity-10 pointer-events-none"
         >
-          <img 
-            src="https://picsum.photos/seed/sudan-charity/1200/600" 
-            alt="" 
-            className="w-full h-full object-cover scale-110"
-            referrerPolicy="no-referrer"
-          />
+          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+          </svg>
         </motion.div>
         <div className="absolute inset-0 bg-gradient-to-l from-slate-900/80 via-slate-900/40 to-transparent"></div>
         
