@@ -14,6 +14,7 @@ import ProjectDetails from './pages/ProjectDetails';
 import Dashboard from './pages/Dashboard';
 import About from './pages/About';
 import Chatbot from './components/Chatbot';
+import DirectDonateButton from './components/DirectDonateButton';
 import ErrorBoundary from './components/ErrorBoundary';
 import logo from './assets/logo.png';
 export default function App() {
@@ -35,6 +36,7 @@ export default function App() {
             </Routes>
           </main>
           <Chatbot />
+          <DirectDonateButton />
           <footer className="bg-white border-t border-slate-200 py-12">
             <div className="max-w-7xl mx-auto px-4 text-center">
               <div className="flex items-center justify-center gap-2 mb-4">
