@@ -88,22 +88,6 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-2xl card-shadow border-r-4 border-sudan-gold">
-          <div className="text-3xl font-bold text-sudan-green">1,420,000</div>
-          <div className="text-sm text-slate-500 font-semibold mt-1">إجمالي التبرعات (ج.س)</div>
-        </div>
-        <div className="bg-white p-6 rounded-2xl card-shadow border-r-4 border-sudan-red">
-          <div className="text-3xl font-bold text-sudan-green">128</div>
-          <div className="text-sm text-slate-500 font-semibold mt-1">مشروع نشط حالياً</div>
-        </div>
-        <div className="bg-white p-6 rounded-2xl card-shadow border-r-4 border-sudan-green">
-          <div className="text-3xl font-bold text-sudan-green">10,000+</div>
-          <div className="text-sm text-slate-500 font-semibold mt-1">حياة تم تغييرها</div>
-        </div>
-      </section>
-
       {/* Categories */}
       <section className="flex flex-col gap-6">
         <h2 className="text-2xl font-bold text-slate-900">تصنيفات الخير</h2>
