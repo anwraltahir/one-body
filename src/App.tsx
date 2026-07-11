@@ -17,6 +17,8 @@ import Chatbot from './components/Chatbot';
 import DirectDonateButton from './components/DirectDonateButton';
 import ErrorBoundary from './components/ErrorBoundary';
 import logo from './assets/logo.png';
+import developerLogo from './assets/developer.jpg';
+
 export default function App() {
   return (
     <ErrorBoundary>
@@ -45,6 +47,13 @@ export default function App() {
               </div>
               <p className="text-slate-500 text-sm">© 2026 منصة الجسد الواحد - جميع الحقوق محفوظة</p>
               <p className="text-slate-400 text-xs mt-2">صنع بحب لأجل السودان</p>
+              
+              <div className="mt-6 pt-6 border-t border-slate-100 flex flex-col items-center justify-center gap-2 text-slate-400 text-xs">
+                <span className="font-semibold">تطوير وتصميم الموقع:</span>
+                <a href="mailto:anwraltahir@gmail.com" className="hover:opacity-85 transition-opacity" title="تواصل مع المطور">
+                  <img src={developerLogo} alt="د. أنور الطاهر" className="h-12 object-contain rounded-lg border border-slate-100 shadow-sm" />
+                </a>
+              </div>
             </div>
           </footer>
         </div>
