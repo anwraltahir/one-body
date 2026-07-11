@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Heart, User, LogOut, Menu, X, PlusCircle, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-
+import logo from '../assets/logo.png';
 const Navbar: React.FC = () => {
   const { user, login, logout } = useAuth();
   const [isOpen, setIsOpen] = React.useState(false);
@@ -17,9 +17,7 @@ const Navbar: React.FC = () => {
           {/* Right Side: Logo */}
           <div className="flex-1 flex justify-start items-center">
             <Link to="/" className="flex items-center gap-3 shrink-0">
-              <div className="w-10 h-10 bg-sudan-green rounded-lg relative flex items-center justify-center shrink-0 shadow-sm">
-                <div className="absolute w-5 h-1 bg-sudan-red top-[18px] left-[10px]"></div>
-              </div>
+              <img src={logo} alt="الجسد الواحد" className="w-10 h-10 object-contain shrink-0" />
               <span className="text-xl lg:text-2xl font-bold text-sudan-green tracking-tight whitespace-nowrap">الجسد الواحد</span>
             </Link>
           </div>
