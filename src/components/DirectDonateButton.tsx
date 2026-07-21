@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Heart, Copy, Check, Upload, X, AlertCircle } from 'lucide-react';
-import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { apiRequest, siteApi, SiteBankAccount } from '../lib/api';
 
 const DirectDonateButton: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,6 +9,7 @@ const DirectDonateButton: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [bank, setBank] = useState<SiteBankAccount | null>(null);
 
   const [formData, setFormData] = useState({
     type: 'تبرع عام',
@@ -19,7 +19,23 @@ const DirectDonateButton: React.FC = () => {
   const [receiptBase64, setReceiptBase64] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
 
-  const accountNumber = '1780926';
+  useEffect(() => {
+    siteApi
+      .settings()
+      .then((s) => {
+        const primary =
+          s.bankAccounts?.find((b) => b.isPrimary) || s.bankAccounts?.[0] || null;
+        setBank(primary);
+      })
+      .catch(() => {
+        // fallback shown in UI
+      });
+  }, []);
+
+  const accountNumber = bank?.accountNumber || '1780926';
+  const bankName = bank?.bankName || 'بنك الخرطوم';
+  const accountName = bank?.accountName || 'منصة الجسد الواحد';
+  const instructions = bank?.instructions || '';
 
   const handleCopy = async () => {
     try {
@@ -82,13 +98,14 @@ const DirectDonateButton: React.FC = () => {
     setError(null);
 
     try {
-      await addDoc(collection(db, 'direct_donations'), {
-        donationType: formData.type,
-        amount: Number(formData.amount),
-        donorName: formData.donorName || 'فاعل خير',
-        receiptImage: receiptBase64,
-        status: 'pending',
-        createdAt: serverTimestamp(),
+      await apiRequest('/direct-donations/', {
+        method: 'POST',
+        body: JSON.stringify({
+          donationType: formData.type,
+          amount: Number(formData.amount),
+          donorName: formData.donorName || 'فاعل خير',
+          receiptImage: receiptBase64,
+        }),
       });
 
       setSuccess(true);
@@ -105,7 +122,6 @@ const DirectDonateButton: React.FC = () => {
 
   return (
     <>
-      {/* Floating Button */}
       <div className="fixed top-24 left-6 z-[90]">
         <motion.button
           onClick={() => {
@@ -122,11 +138,9 @@ const DirectDonateButton: React.FC = () => {
         </motion.button>
       </div>
 
-      {/* Modal Overlay */}
       <AnimatePresence>
         {isOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -135,14 +149,12 @@ const DirectDonateButton: React.FC = () => {
               className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
             />
 
-            {/* Modal Body */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="relative w-full max-w-lg bg-white rounded-[32px] shadow-2xl overflow-hidden border border-slate-100 max-h-[90vh] flex flex-col"
             >
-              {/* Header */}
               <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                 <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
                   <Heart className="text-sudan-red" size={24} fill="currentColor" />
@@ -156,7 +168,6 @@ const DirectDonateButton: React.FC = () => {
                 </button>
               </div>
 
-              {/* Scrollable Content */}
               <div className="p-6 overflow-y-auto space-y-6 flex-grow no-scrollbar">
                 {success ? (
                   <div className="text-center py-8 space-y-4">
@@ -167,10 +178,7 @@ const DirectDonateButton: React.FC = () => {
                     <p className="text-sm text-slate-500 font-semibold leading-relaxed">
                       شكراً لجودك وعطائك. سيتم مراجعة إشعار التحويل من قبل المشرفين لتأكيد المعاملة.
                     </p>
-                    <button
-                      onClick={() => setIsOpen(false)}
-                      className="btn-primary mt-6 px-8 py-3"
-                    >
+                    <button onClick={() => setIsOpen(false)} className="btn-primary mt-6 px-8 py-3">
                       إغلاق
                     </button>
                   </div>
@@ -183,15 +191,18 @@ const DirectDonateButton: React.FC = () => {
                       </div>
                     )}
 
-                    {/* Bank Info Card */}
                     <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-6 rounded-2xl space-y-4 shadow-md relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
-                      <div className="text-xs font-bold tracking-wider text-slate-400 uppercase">بيانات الحساب البنكي</div>
+                      <div className="text-xs font-bold tracking-wider text-slate-400 uppercase">
+                        بيانات الحساب البنكي (من لوحة Django)
+                      </div>
                       <div className="space-y-1.5">
-                        <div className="text-sm font-semibold text-slate-300">بنك أم درمان الوطني</div>
-                        <div className="text-lg font-bold text-white">منظمة الجسد الواحد الخيرية</div>
+                        <div className="text-sm font-semibold text-slate-300">{bankName}</div>
+                        <div className="text-lg font-bold text-white">{accountName}</div>
                         <div className="flex items-center justify-between bg-white/10 px-4 py-2.5 rounded-xl border border-white/10 mt-3">
-                          <span className="font-mono text-xl font-bold tracking-wider">{accountNumber}</span>
+                          <span className="font-mono text-xl font-bold tracking-wider">
+                            {accountNumber}
+                          </span>
                           <button
                             type="button"
                             onClick={handleCopy}
@@ -210,12 +221,16 @@ const DirectDonateButton: React.FC = () => {
                             )}
                           </button>
                         </div>
+                        {instructions && (
+                          <p className="text-xs text-slate-300 mt-2 leading-relaxed">{instructions}</p>
+                        )}
                       </div>
                     </div>
 
-                    {/* Donation Type */}
                     <div className="flex flex-col gap-2">
-                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">نوع التبرع</label>
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        نوع التبرع
+                      </label>
                       <select
                         required
                         className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:border-sudan-green focus:bg-white outline-none font-bold text-sm"
@@ -230,9 +245,10 @@ const DirectDonateButton: React.FC = () => {
                       </select>
                     </div>
 
-                    {/* Amount */}
                     <div className="flex flex-col gap-2">
-                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">المبلغ المتبرع به (ج.س)</label>
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        المبلغ المتبرع به (ج.س)
+                      </label>
                       <input
                         required
                         type="number"
@@ -243,9 +259,10 @@ const DirectDonateButton: React.FC = () => {
                       />
                     </div>
 
-                    {/* Donor Name */}
                     <div className="flex flex-col gap-2">
-                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">اسم المتبرع (اختياري)</label>
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        اسم المتبرع (اختياري)
+                      </label>
                       <input
                         type="text"
                         placeholder="فاعل خير"
@@ -255,9 +272,10 @@ const DirectDonateButton: React.FC = () => {
                       />
                     </div>
 
-                    {/* File Upload */}
                     <div className="flex flex-col gap-2">
-                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">صورة إشعار التحويل</label>
+                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        صورة إشعار التحويل
+                      </label>
                       <div className="relative border-2 border-dashed border-slate-200 hover:border-sudan-green rounded-2xl p-6 transition-all flex flex-col items-center justify-center gap-2 cursor-pointer bg-slate-50">
                         <input
                           type="file"
@@ -276,12 +294,15 @@ const DirectDonateButton: React.FC = () => {
                       </div>
                       {receiptBase64 && (
                         <div className="mt-2 relative w-24 h-24 border border-slate-100 rounded-xl overflow-hidden shadow-sm bg-slate-100">
-                          <img src={receiptBase64} alt="Receipt preview" className="w-full h-full object-cover" />
+                          <img
+                            src={receiptBase64}
+                            alt="Receipt preview"
+                            className="w-full h-full object-cover"
+                          />
                         </div>
                       )}
                     </div>
 
-                    {/* Submit Button */}
                     <button
                       type="submit"
                       disabled={loading}

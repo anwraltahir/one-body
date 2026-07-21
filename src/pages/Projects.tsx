@@ -1,43 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../firebase';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { useSearchParams } from 'react-router-dom';
+import { projectsApi } from '../lib/api';
 import { Project, ProjectCategory } from '../types';
 import ProjectCard from '../components/ProjectCard';
-import { Search, Filter, SlidersHorizontal } from 'lucide-react';
-import { motion } from 'motion/react';
+import { Search } from 'lucide-react';
 
-const categories: ProjectCategory[] = ['مياه وآبار', 'مساجد', 'زكاة مال', 'زكاة فطر', 'فدية صيام', 'دعم التعليم', 'الصحة'];
+const categories: ProjectCategory[] = [
+  'مياه وآبار',
+  'مساجد',
+  'زكاة مال',
+  'زكاة فطر',
+  'فدية صيام',
+  'دعم التعليم',
+  'الصحة',
+];
 
 const Projects: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const initialCategory = (searchParams.get('category') as ProjectCategory) || 'الكل';
+
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<ProjectCategory | 'الكل'>('الكل');
+  const [selectedCategory, setSelectedCategory] = useState<ProjectCategory | 'الكل'>(
+    categories.includes(initialCategory as ProjectCategory) ? (initialCategory as ProjectCategory) : 'الكل',
+  );
 
   useEffect(() => {
     const fetchProjects = async () => {
       setLoading(true);
       try {
-        let q = query(
-          collection(db, 'projects'),
-          where('isPublic', '==', true),
-          where('status', '==', 'active'),
-          orderBy('createdAt', 'desc')
-        );
-
+        const params: { category?: string; status?: string } = { status: 'active' };
         if (selectedCategory !== 'الكل') {
-          q = query(
-            collection(db, 'projects'),
-            where('isPublic', '==', true),
-            where('status', '==', 'active'),
-            where('category', '==', selectedCategory),
-            orderBy('createdAt', 'desc')
-          );
+          params.category = selectedCategory;
         }
-
-        const snapshot = await getDocs(q);
-        const fetchedProjects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
-        setProjects(fetchedProjects);
+        const list = await projectsApi.list(params);
+        setProjects(list as Project[]);
       } catch (error) {
         console.error('Error fetching projects', error);
       } finally {
@@ -48,9 +46,10 @@ const Projects: React.FC = () => {
     fetchProjects();
   }, [selectedCategory]);
 
-  const filteredProjects = projects.filter(p =>
-    p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.description.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredProjects = projects.filter(
+    (p) =>
+      p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.description.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
@@ -60,7 +59,6 @@ const Projects: React.FC = () => {
         <p className="text-slate-600 text-lg">ساهم في دعم المشاريع التي تلامس قلبك وتحدث أثراً حقيقياً.</p>
       </div>
 
-      {/* Filters */}
       <div className="bg-white p-6 rounded-2xl card-shadow border border-slate-100 flex flex-col md:flex-row gap-6 items-center">
         <div className="relative flex-grow w-full">
           <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
@@ -76,17 +74,21 @@ const Projects: React.FC = () => {
           <button
             onClick={() => setSelectedCategory('الكل')}
             className={`px-6 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
-              selectedCategory === 'الكل' ? 'bg-sudan-green text-white shadow-lg shadow-sudan-green/20' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              selectedCategory === 'الكل'
+                ? 'bg-sudan-green text-white shadow-lg shadow-sudan-green/20'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
             الكل
           </button>
-          {categories.map(cat => (
+          {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
               className={`px-6 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
-                selectedCategory === cat ? 'bg-sudan-green text-white shadow-lg shadow-sudan-green/20' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                selectedCategory === cat
+                  ? 'bg-sudan-green text-white shadow-lg shadow-sudan-green/20'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
               {cat}
@@ -95,16 +97,15 @@ const Projects: React.FC = () => {
         </div>
       </div>
 
-      {/* Results */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[1, 2, 3, 4, 5, 6].map(i => (
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className="bg-white rounded-2xl h-[400px] animate-pulse card-shadow"></div>
           ))}
         </div>
       ) : filteredProjects.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {filteredProjects.map(project => (
+          {filteredProjects.map((project) => (
             <ProjectCard key={project.id} project={project} />
           ))}
         </div>

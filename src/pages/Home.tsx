@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { db } from '../firebase';
-import { collection, query, where, limit, getDocs, orderBy } from 'firebase/firestore';
+import { projectsApi, siteApi, SiteSettings } from '../lib/api';
 import { Project } from '../types';
 import ProjectCard from '../components/ProjectCard';
 import { motion, useScroll, useTransform } from 'motion/react';
-import { ArrowLeft, Droplets, Landmark, GraduationCap, HeartPulse, Coins, Sparkles } from 'lucide-react';
+import { ArrowLeft, Droplets, Landmark, GraduationCap, HeartPulse, Coins } from 'lucide-react';
 
 const categories = [
   { name: 'مياه وآبار', icon: Droplets, color: 'text-blue-500' },
@@ -17,22 +16,20 @@ const categories = [
 
 const Home: React.FC = () => {
   const [featuredProjects, setFeaturedProjects] = useState<Project[]>([]);
+  const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 500], [0, 100]);
 
   useEffect(() => {
-    const fetchProjects = async () => {
+    const fetchData = async () => {
       try {
-        const q = query(
-          collection(db, 'projects'),
-          where('isPublic', '==', true),
-          where('status', '==', 'active'),
-          limit(3)
-        );
-        const snapshot = await getDocs(q);
-        const projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
-        setFeaturedProjects(projects);
+        const [projects, site] = await Promise.all([
+          projectsApi.list({ status: 'active' }),
+          siteApi.settings().catch(() => null),
+        ]);
+        setFeaturedProjects(projects.slice(0, 3) as Project[]);
+        if (site) setSettings(site);
       } catch (error) {
         console.error('Error fetching projects', error);
       } finally {
@@ -40,14 +37,14 @@ const Home: React.FC = () => {
       }
     };
 
-    fetchProjects();
+    fetchData();
   }, []);
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col section-gap">
       {/* Hero Section */}
       <section className="relative h-[400px] rounded-3xl overflow-hidden bg-slate-900 flex items-center px-10">
-        <motion.div 
+        <motion.div
           style={{ y: y1 }}
           className="absolute inset-0 opacity-10 pointer-events-none"
         >
@@ -61,72 +58,85 @@ const Home: React.FC = () => {
           </svg>
         </motion.div>
         <div className="absolute inset-0 bg-gradient-to-l from-slate-900/80 via-slate-900/40 to-transparent"></div>
-        
+
         <div className="relative z-10 max-w-2xl">
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight"
           >
-            كالبنيان يشد بعضه بعضاً
+            {settings?.heroTitle || 'كالبنيان يشد بعضه بعضاً'}
           </motion.h1>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="text-lg text-slate-200 mb-8 leading-relaxed"
           >
-            منصة سودانية ذكية لتمكين المشاريع الخيرية وتتبع أثرها بكل شفافية وأمان.
+            {settings?.heroSubtitle ||
+              'منصة سودانية ذكية لتمكين المشاريع الخيرية وتتبع أثرها بكل شفافية وأمان.'}
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="flex gap-4"
+            className="flex flex-wrap gap-4"
           >
-            <Link to="/projects" className="btn-primary text-lg px-8 py-3">استكشف المشاريع</Link>
-            <Link to="/create-project" className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-8 py-3 rounded-lg font-semibold hover:bg-white/20 transition-all">أنشئ مشروعاً</Link>
+            <Link to="/projects" className="btn-primary">
+              استكشف المشاريع
+            </Link>
+            <Link
+              to="/create-project"
+              className="px-6 py-3 bg-white/10 text-white rounded-full font-bold hover:bg-white/20 transition-colors backdrop-blur-sm"
+            >
+              ابدأ مشروعك
+            </Link>
           </motion.div>
         </div>
       </section>
 
       {/* Categories */}
-      <section className="flex flex-col gap-6">
-        <h2 className="text-2xl font-bold text-slate-900">تصنيفات الخير</h2>
+      <section>
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold text-slate-900">مجالات الخير</h2>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {categories.map((cat) => (
-            <div key={cat.name} className="bg-white p-6 rounded-2xl card-shadow flex flex-col items-center gap-4 hover:border-sudan-green border-2 border-transparent transition-all cursor-pointer group">
-              <div className="w-14 h-14 bg-slate-50 rounded-xl flex items-center justify-center text-2xl group-hover:bg-sudan-green/10 transition-colors">
-                {cat.name === 'مياه وآبار' && '💧'}
-                {cat.name === 'مساجد' && '🕌'}
-                {cat.name === 'دعم التعليم' && '🎓'}
-                {cat.name === 'الصحة' && '⚕️'}
-                {cat.name === 'زكاة مال' && '🌾'}
-              </div>
-              <span className="font-bold text-slate-700">{cat.name}</span>
-            </div>
+            <Link
+              key={cat.name}
+              to={`/projects?category=${encodeURIComponent(cat.name)}`}
+              className="bg-white p-6 rounded-2xl border border-slate-100 card-shadow flex flex-col items-center gap-3 hover:border-sudan-green/30 transition-all"
+            >
+              <cat.icon className={cat.color} size={32} />
+              <span className="font-bold text-slate-700 text-sm text-center">{cat.name}</span>
+            </Link>
           ))}
         </div>
       </section>
 
-      {/* Featured Projects */}
-      <section className="flex flex-col gap-6">
-        <div className="flex justify-between items-center">
+      {/* Featured */}
+      <section>
+        <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold text-slate-900">مشاريع مميزة</h2>
-          <Link to="/projects" className="text-sudan-green font-bold hover:underline">عرض الكل ←</Link>
+          <Link
+            to="/projects"
+            className="flex items-center gap-2 text-sudan-green font-bold hover:opacity-80"
+          >
+            <span>عرض الكل</span>
+            <ArrowLeft size={18} />
+          </Link>
         </div>
-
         {loading ? (
+          <div className="text-center py-16 text-slate-400 font-bold">جاري التحميل...</div>
+        ) : featuredProjects.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="bg-white rounded-2xl h-[400px] animate-pulse"></div>
+            {featuredProjects.map((project) => (
+              <ProjectCard key={project.id} project={project} />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {featuredProjects.map(project => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
+          <div className="text-center py-16 text-slate-400 font-bold bg-white rounded-3xl border border-slate-100">
+            لا توجد مشاريع نشطة حالياً
           </div>
         )}
       </section>

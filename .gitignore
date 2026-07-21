@@ -6,3 +6,12 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Django
+backend/venv/
+backend/db.sqlite3
+backend/staticfiles/
+backend/media/
+backend/**/__pycache__/
+backend/**/*.pyc
+*.sqlite3

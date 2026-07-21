@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { db, serverTimestamp } from '../firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { useNavigate, Link } from 'react-router-dom';
+import { projectsApi } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 import { ProjectCategory } from '../types';
-import { motion } from 'motion/react';
-import { Upload, Info, Lock, Globe, AlertCircle } from 'lucide-react';
+import { Info, Lock, Globe, AlertCircle } from 'lucide-react';
 
-const categories: ProjectCategory[] = ['مياه وآبار', 'مساجد', 'زكاة مال', 'زكاة فطر', 'فدية صيام', 'دعم التعليم', 'الصحة'];
+const categories: ProjectCategory[] = [
+  'مياه وآبار',
+  'مساجد',
+  'زكاة مال',
+  'زكاة فطر',
+  'فدية صيام',
+  'دعم التعليم',
+  'الصحة',
+];
 
 const CreateProject: React.FC = () => {
   const { user, profile } = useAuth();
@@ -32,22 +38,22 @@ const CreateProject: React.FC = () => {
     setError(null);
 
     try {
-      const projectData = {
-        ...formData,
+      const created = await projectsApi.create({
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
         targetAmount: Number(formData.targetAmount),
-        currentAmount: 0,
-        creatorId: user.uid,
-        creatorName: profile?.displayName || 'مستخدم',
-        status: 'pending',
-        createdAt: serverTimestamp(),
-        donorCount: 0,
-      };
-
-      const docRef = await addDoc(collection(db, 'projects'), projectData);
-      navigate(`/projects/${docRef.id}`);
+        isPublic: formData.isPublic,
+        imageUrl: formData.imageUrl || '',
+      });
+      navigate(`/projects/${created.id}`);
     } catch (err) {
       console.error('Error creating project', err);
-      setError('حدث خطأ أثناء إنشاء المشروع. يرجى المحاولة مرة أخرى.');
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'حدث خطأ أثناء إنشاء المشروع. يرجى المحاولة مرة أخرى.',
+      );
     } finally {
       setLoading(false);
     }
@@ -57,7 +63,14 @@ const CreateProject: React.FC = () => {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
         <h2 className="text-2xl font-bold mb-4">يجب تسجيل الدخول لإنشاء مشروع</h2>
-        <button onClick={() => navigate('/')} className="bg-sudan-green text-white px-6 py-2 rounded-full">العودة للرئيسية</button>
+        <p className="text-slate-500 mb-6">مرحباً {profile?.displayName || ''}</p>
+        <Link
+          to="/login"
+          state={{ from: '/create-project' }}
+          className="bg-sudan-green text-white px-6 py-2 rounded-full font-bold inline-block"
+        >
+          تسجيل الدخول
+        </Link>
       </div>
     );
   }
@@ -69,7 +82,10 @@ const CreateProject: React.FC = () => {
         <p className="text-slate-600 text-lg">املأ البيانات التالية لبدء حملة التبرعات الخاصة بك.</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-8 bg-white p-10 rounded-3xl card-shadow border border-slate-100">
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-8 bg-white p-10 rounded-3xl card-shadow border border-slate-100"
+      >
         {error && (
           <div className="bg-red-50 text-red-600 p-5 rounded-2xl flex items-center gap-4 border border-red-100">
             <AlertCircle size={24} />
@@ -95,10 +111,14 @@ const CreateProject: React.FC = () => {
             <select
               className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-sudan-green focus:bg-white transition-all outline-none font-bold appearance-none"
               value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value as ProjectCategory })}
+              onChange={(e) =>
+                setFormData({ ...formData, category: e.target.value as ProjectCategory })
+              }
             >
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
               ))}
             </select>
           </div>
@@ -121,6 +141,7 @@ const CreateProject: React.FC = () => {
               <input
                 required
                 type="number"
+                min="1"
                 placeholder="0"
                 className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:border-sudan-green focus:bg-white transition-all outline-none font-bold"
                 value={formData.targetAmount}
@@ -146,10 +167,16 @@ const CreateProject: React.FC = () => {
                 type="button"
                 onClick={() => setFormData({ ...formData, isPublic: true })}
                 className={`flex items-center gap-4 p-6 rounded-2xl border-2 transition-all ${
-                  formData.isPublic ? 'border-sudan-green bg-sudan-green/5 text-sudan-green' : 'border-slate-100 text-slate-400 hover:border-slate-200'
+                  formData.isPublic
+                    ? 'border-sudan-green bg-sudan-green/5 text-sudan-green'
+                    : 'border-slate-100 text-slate-400 hover:border-slate-200'
                 }`}
               >
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${formData.isPublic ? 'bg-sudan-green text-white' : 'bg-slate-100'}`}>
+                <div
+                  className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                    formData.isPublic ? 'bg-sudan-green text-white' : 'bg-slate-100'
+                  }`}
+                >
                   <Globe size={24} />
                 </div>
                 <div className="text-right">
@@ -161,10 +188,16 @@ const CreateProject: React.FC = () => {
                 type="button"
                 onClick={() => setFormData({ ...formData, isPublic: false })}
                 className={`flex items-center gap-4 p-6 rounded-2xl border-2 transition-all ${
-                  !formData.isPublic ? 'border-sudan-green bg-sudan-green/5 text-sudan-green' : 'border-slate-100 text-slate-400 hover:border-slate-200'
+                  !formData.isPublic
+                    ? 'border-sudan-green bg-sudan-green/5 text-sudan-green'
+                    : 'border-slate-100 text-slate-400 hover:border-slate-200'
                 }`}
               >
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${!formData.isPublic ? 'bg-sudan-green text-white' : 'bg-slate-100'}`}>
+                <div
+                  className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                    !formData.isPublic ? 'bg-sudan-green text-white' : 'bg-slate-100'
+                  }`}
+                >
                   <Lock size={24} />
                 </div>
                 <div className="text-right">
@@ -179,7 +212,8 @@ const CreateProject: React.FC = () => {
         <div className="bg-slate-50 p-6 rounded-2xl flex items-start gap-4 border border-slate-100">
           <Info className="text-sudan-gold flex-shrink-0 mt-1" size={24} />
           <p className="text-sm text-slate-600 leading-relaxed font-semibold">
-            بإنشائك لهذا المشروع، أنت تلتزم بصحة البيانات المقدمة. سيتم مراجعة المشروع من قبل المشرفين قبل تفعيله للعامة لضمان الأمان والشفافية.
+            بإنشائك لهذا المشروع، أنت تلتزم بصحة البيانات المقدمة. سيتم مراجعة المشروع من قبل
+            المشرفين قبل تفعيله للعامة لضمان الأمان والشفافية.
           </p>
         </div>
 

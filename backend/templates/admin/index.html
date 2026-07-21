@@ -1,0 +1,70 @@
+{% extends "admin/index.html" %}
+{% load i18n static %}
+
+{% block content %}
+<div class="aljasad-dashboard">
+  <div class="dash-hero">
+    <div>
+      <h1>مرحباً{% if user.display_name %}، {{ user.display_name }}{% endif %}</h1>
+      <p>إدارة منصة الجسد الواحد — تحكم كامل بالمشاريع، التبرعات، والمستخدمين</p>
+    </div>
+    <div class="dash-hero-actions">
+      <a class="btn-dash primary" href="{% url 'admin:charity_project_changelist' %}">المشاريع</a>
+      <a class="btn-dash" href="{% url 'admin:charity_directdonation_changelist' %}">التحويلات البنكية</a>
+      <a class="btn-dash" href="{% url 'admin:charity_sitesettings_changelist' %}">إعدادات المنصة</a>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card green">
+      <span class="stat-label">المشاريع</span>
+      <span class="stat-value">{{ dashboard.projects_total }}</span>
+      <span class="stat-meta">{{ dashboard.projects_active }} نشط · {{ dashboard.projects_pending }} قيد المراجعة</span>
+    </div>
+    <div class="stat-card gold">
+      <span class="stat-label">إجمالي التبرعات</span>
+      <span class="stat-value">{{ dashboard.donations_sum }}</span>
+      <span class="stat-meta">{{ dashboard.donations_count }} عملية تبرع</span>
+    </div>
+    <div class="stat-card red">
+      <span class="stat-label">تحويلات بنكية</span>
+      <span class="stat-value">{{ dashboard.transfers_pending }}</span>
+      <span class="stat-meta">بانتظار المراجعة · {{ dashboard.transfers_total }} إجمالي</span>
+    </div>
+    <div class="stat-card blue">
+      <span class="stat-label">المستخدمون</span>
+      <span class="stat-value">{{ dashboard.users_total }}</span>
+      <span class="stat-meta">{{ dashboard.users_staff }} مشرف</span>
+    </div>
+  </div>
+
+  <div class="quick-row">
+    <a class="quick-card" href="{% url 'admin:charity_project_add' %}">
+      <span class="q-icon">＋</span>
+      <span>مشروع جديد</span>
+    </a>
+    <a class="quick-card" href="{% url 'admin:accounts_user_add' %}">
+      <span class="q-icon">👤</span>
+      <span>مستخدم جديد</span>
+    </a>
+    <a class="quick-card" href="{% url 'admin:charity_bankaccount_changelist' %}">
+      <span class="q-icon">🏦</span>
+      <span>الحسابات البنكية</span>
+    </a>
+    <a class="quick-card" href="{% url 'admin:charity_category_changelist' %}">
+      <span class="q-icon">🏷</span>
+      <span>التصنيفات</span>
+    </a>
+    <a class="quick-card" href="{% url 'admin:charity_announcement_changelist' %}">
+      <span class="q-icon">📢</span>
+      <span>الإعلانات</span>
+    </a>
+    <a class="quick-card" href="{% url 'admin:charity_contactmessage_changelist' %}">
+      <span class="q-icon">✉</span>
+      <span>رسائل التواصل</span>
+    </a>
+  </div>
+</div>
+
+{{ block.super }}
+{% endblock %}
